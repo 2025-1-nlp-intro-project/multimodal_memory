@@ -1,4 +1,4 @@
-# <reminder> 방법론
+# reminder 방법론
 ## Additional by 엄태우
 
 Visual Dialogue 데이터셋을 활용한 Gemma-3 모델 파인튜닝 및 평가 시스템에 대한프로젝트입니다.
