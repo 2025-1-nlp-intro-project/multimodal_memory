@@ -331,7 +331,7 @@ Examples:
         help='Download only COCO dataset'
     )
     parser.add_argument(
-        '--visdial_splits', 
+        '--split', 
         nargs='+', 
         default=['train', 'val', 'test'], 
         help='VisDial splits to download (choices: train, val, test)'
@@ -366,7 +366,7 @@ Examples:
         downloader.download_coco(args.coco_datasets)
     else:
         # Download both datasets by default
-        downloader.download_visdial(args.visdial_splits)
+        downloader.download_visdial(args.split)
         downloader.download_coco(args.coco_datasets)
     
     # Verify downloads unless skipped

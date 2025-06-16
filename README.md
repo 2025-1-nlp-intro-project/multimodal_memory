@@ -57,22 +57,24 @@ reminder_tag/
 - 최소 32GB RAM
 - 200GB 이상의 저장 공간 (데이터셋 및 모델 포함)
 
+### 빠른 시작
+```bash
+bash quick_start.sh
+```
+
 ### 설치 방법
 
 ```bash
 # 1. 저장소 클론
 git clone https://github.com/2025-1-nlp-intro-project/multimodal_memory.git
-cd multimodal_memory
+cd multimodal_memory/reminder_tag
 
 # 2. 가상 환경 생성 및 활성화
-conda create -n visdial python=3.9 -y
+conda create -n visdial python=3.10 -y
 conda activate visdial
 
 # 3. 의존성 설치
 pip install -r requirements.txt
-
-# 4. Unsloth 설치 (Gemma-3 모델 최적화 라이브러리)
-pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
 ```
 
 ### 데이터셋 다운로드
@@ -95,20 +97,20 @@ python data/download_data.py --split val
 ### 기본 데이터 생성
 
 ```bash
-# 기본 데이터셋 생성
-python src/data_generation/gen_base.py \
-  --output_path data/generated/base_dataset.json \
-  --sample_count 50000
-```
+# 기본 데이터 생성 (Ollama 사용)
+python -m src.data_generation.gen_base \
+    --annotation_file data/visdial/annotations/instances_train2014.json \
+    --visdial_path data/visdial/data/visdial_1.0_train.json \
+    --output_path outputs/data_base.json \
+    --max_samples 1000
 
-### API 기반 데이터 생성
-
-고품질 응답 생성을 위한 API 기반 데이터 생성:
-
-```bash
-python src/data_generation/gen_api.py \
-  --output_path data/generated/api_dataset.json \
-  --model "gemma3:27b"
+# 추론 과정 포함 데이터 생성
+python -m src.data_generation.gen_api \
+    --annotation_file data/visdial/annotations/instances_train2014.json \
+    --visdial_path data/visdial/data/visdial_1.0_train.json \
+    --output_path outputs/data_api.json \
+    --export_training outputs/training_data.json \
+    --max_samples 1000
 ```
 
 ### 평가 데이터 생성
@@ -116,8 +118,19 @@ python src/data_generation/gen_api.py \
 모델 평가를 위한 데이터셋 생성:
 
 ```bash
-python src/data_generation/gen_eval.py \
-  --output_path data/generated/eval_dataset.json
+# 평가 데이터 생성
+python -m src.data_generation.gen_eval \
+    --visdial_path data/visdial/data/visdial_1.0_val.json \
+    --image_dir data/visdial/images/val2018/ \
+    --output_path outputs/eval_data.json \
+    --export_predictions outputs/predictions.json \
+    --max_samples 500
+
+# 평가 지표 계산
+python src/evaluation/evaluate.py \
+    --generated outputs/predictions.json \
+    --ground_truth data/visdial/data/visdial_1.0_val.json \
+    --output outputs/evaluation_results.json
 ```
 
 ## 🔧 모델 파인튜닝
@@ -213,14 +226,33 @@ python src/evaluation/evaluation.py \
   --verbose
 ```
 
-### 평가 지표
+### 평가 지표 (Evaluation Metrics)
 
-Visual Dialogue 모델 평가에 사용되는 주요 지표:
+Visual Dialogue 파인튜닝 프로젝트는 **BERTScore를 주요 메트릭**으로 사용하며, 보조 메트릭들과 함께 포괄적인 평가를 제공합니다.
 
-- **MRR (Mean Reciprocal Rank)**: 정답의 평균 역순위 (높을수록 좋음)
-- **Recall@k**: 상위 k개 응답 중에 정답이 있는 비율 (k=1, 5, 10)
-- **NDCG (Normalized Discounted Cumulative Gain)**: 순위 기반 정규화된 평가 지표
-- **Mean Rank**: 정답의 평균 순위 (낮을수록 좋음)
+**🎯 주요 메트릭: BERTScore**
+
+#### BERTScore란?
+
+BERTScore는 BERT의 사전 훈련된 컨텍스추얼 임베딩을 활용하여 텍스트 간 의미적 유사성을 측정하는 혁신적인 평가 지표입니다. 기존의 n-gram 기반 메트릭들(BLEU, ROUGE)과 달리, **단순한 단어 매칭을 넘어서 실제 의미를 이해**합니다.
+
+#### 왜 BERTScore인가?
+
+🔍 기존 메트릭의 한계
+```
+참조 답변: "The food was delicious."
+생성 답변: "I loved the meal."
+```
+
+- **BLEU/ROUGE**: 단어가 달라서 낮은 점수 (0.0)
+- **BERTScore**: 의미가 유사하므로 높은 점수 (0.85+)
+
+✨ BERTScore의 장점
+
+1. **의미적 이해**: 동의어, 패러프레이즈를 올바르게 인식
+2. **컨텍스트 고려**: 문장 내 단어의 문맥적 의미 파악
+3. **유연한 평가**: 다양한 표현 방식을 공정하게 평가
+4. **인간 평가와 높은 상관관계**: 실제 인간의 판단과 매우 유사
 
 ## 🧪 전체 파이프라인 실행
 
