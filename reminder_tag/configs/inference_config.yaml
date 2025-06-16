@@ -1,0 +1,7 @@
+model:
+  checkpoint_path: "./models/gemma3_finetuned"
+
+generation:
+  max_new_tokens: 512
+  temperature: 1.2
+  top_p: 0.9

@@ -1,0 +1,94 @@
+# Visual Dialogue Fine-tuning Configuration
+
+# Model settings
+model:
+  name: "unsloth/gemma-3-4b-it"
+  load_in_4bit: true
+  use_gradient_checkpointing: "unsloth"
+
+# LoRA/PEFT settings
+lora:
+  r: 16
+  lora_alpha: 16
+  lora_dropout: 0.0
+  bias: "none"
+  use_rslora: false
+  finetune_vision_layers: true
+  finetune_language_layers: true
+  finetune_attention_modules: true
+  finetune_mlp_modules: true
+
+# Training configuration
+training:
+  output_dir: "./outputs"
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  warmup_steps: 5
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  lr_scheduler_type: "linear"
+  optim: "adamw_8bit"
+  max_seq_length: 2048
+  logging_steps: 1
+  save_steps: 500
+  eval_steps: 500
+  max_steps: -1
+  num_train_epochs: 3
+  dataloader_num_workers: 4
+  remove_unused_columns: false
+  dataset_kwargs:
+    skip_prepare_dataset: true
+
+# Data paths
+data:
+  visdial_train_path: "data/visdial/data/visdial_1.0_train.json"
+  visdial_val_path: "data/visdial/data/visdial_1.0_val.json"
+  visdial_test_path: "data/visdial/data/visdial_1.0_test.json"
+  coco_train_path: "data/coco/train2014"
+  coco_val_path: "data/coco/val2014"
+  visdial_val_images: "data/visdial/images/val2018"
+  annotations_path: "data/coco/annotations/instances_train2014.json"
+
+# Data generation settings
+data_generation:
+  max_samples: 50000
+  conversation_format: "reasoning"  # Options: "base", "reasoning", "eval"
+  include_examples: true
+  reasoning_format: true
+
+# Inference settings
+inference:
+  max_new_tokens: 512
+  temperature: 1.2
+  top_p: 0.9
+  use_cache: true
+  do_sample: true
+
+# Evaluation settings
+evaluation:
+  batch_size: 8
+  metrics: ["mrr", "recall@1", "recall@5", "ndcg@5", "mean_rank"]
+  output_predictions: true
+
+# Hardware settings
+hardware:
+  use_cuda: true
+  use_bf16: true  # Set to false if bf16 not supported
+  use_fp16: false  # Set to true if bf16 not supported
+
+# Logging and monitoring
+logging:
+  report_to: "none"  # Options: "wandb", "tensorboard", "none"
+  wandb_project: "visual-dialogue-finetuning"
+  log_level: "info"
+
+# System message for training
+system_message: |
+  You are given a conversation between a human and an AI, regarding a single image.
+  You are an AI assistant performing image-based Q&A.
+  Before answering the user's final question, you must generate a <reasoning> tag that includes:
+  1. A brief summary of the prior conversation flow and context
+  2. The key visual elements in the image you're focusing on
+  3. The user's intention or what they're asking for
+  4. Your internal reasoning steps in arriving at the answer
+  After the <reasoning> tag, provide your direct answer to the user's question.

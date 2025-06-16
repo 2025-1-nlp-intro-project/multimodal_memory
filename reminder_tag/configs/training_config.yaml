@@ -1,0 +1,63 @@
+# Training Configuration for Visual Dialogue Fine-tuning
+
+# Model Configuration
+model:
+  name: "unsloth/gemma-3-4b-it"
+  load_in_4bit: true
+  use_gradient_checkpointing: "unsloth"
+
+# LoRA Configuration
+lora:
+  r: 16
+  alpha: 16
+  dropout: 0.0
+  bias: "none"
+  use_rslora: false
+  finetune_vision_layers: true
+  finetune_language_layers: true
+  finetune_attention_modules: true
+  finetune_mlp_modules: true
+
+# Training Parameters
+training:
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  warmup_steps: 5
+  learning_rate: 1.0e-5
+  num_train_epochs: 1
+  max_seq_length: 2048
+  
+  # Precision settings (auto-detected)
+  fp16: false  # Will be auto-set based on hardware
+  bf16: false  # Will be auto-set based on hardware
+  
+  # Optimizer settings
+  optim: "adamw_8bit"
+  weight_decay: 0.01
+  lr_scheduler_type: "linear"
+
+# Logging and Saving
+logging:
+  logging_steps: 1
+  save_strategy: "steps"
+  save_steps: 200
+  save_total_limit: 2
+  report_to: "none"  # Can be changed to "wandb" for experiment tracking
+
+# Output Configuration
+output:
+  output_dir: "outputs"
+  final_model_dir: "final_model"
+
+# Data Configuration
+data:
+  remove_unused_columns: false
+  dataset_text_field: ""
+  dataset_kwargs:
+    skip_prepare_dataset: true
+  dataset_num_proc: 4
+
+# System Configuration
+system:
+  seed: 3407
+  dataloader_num_workers: 4
