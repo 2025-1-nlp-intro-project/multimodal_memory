@@ -10,13 +10,13 @@ The official repository of our paper "**MA-LMM: Memory-Augmented Large Multimoda
 
 
 <p align="center">
-<img src="figs/teaser.png" alt="teaser" width="60%">
+<img src="EMR/figs/teaser.png" alt="teaser" width="60%">
 </p>
 
 
 ## Model Overview
 <p align="center">
-<img src="figs/architecture.png" alt="model" width="80%">
+<img src="EMR/figs/architecture.png" alt="model" width="80%">
 </p>
 
 ## Demo
